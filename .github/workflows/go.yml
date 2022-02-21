@@ -1,10 +1,10 @@
-name: observable
+name: node-graph-flow
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ master ]
+    branches: [ main, master ]
 
 jobs:
 
