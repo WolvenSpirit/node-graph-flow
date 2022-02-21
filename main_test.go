@@ -9,9 +9,9 @@ import (
 type TestPayload struct{ State string }
 
 func TestBindNodes(t *testing.T) {
-	n1 := Node{Name: "node1", Task: func(i Input) (Output, error) { fmt.Println("Node1"); return nil, nil }}
-	n2 := Node{Name: "node2", Task: func(i Input) (Output, error) { fmt.Println("Node2"); return nil, nil }}
-	n3 := Node{Name: "node3", Task: func(i Input) (Output, error) { fmt.Println("Node3"); return nil, nil }}
+	n1 := Node{Name: "node1", Task: func(ctx *FlowContext, i Input) (Output, error) { fmt.Println("Node1"); return nil, nil }}
+	n2 := Node{Name: "node2", Task: func(ctx *FlowContext, i Input) (Output, error) { fmt.Println("Node2"); return nil, nil }}
+	n3 := Node{Name: "node3", Task: func(ctx *FlowContext, i Input) (Output, error) { fmt.Println("Node3"); return nil, nil }}
 	type args struct {
 		parent   *Node
 		siblings []*Node
@@ -33,11 +33,14 @@ func TestBindNodes(t *testing.T) {
 }
 
 func TestFlow(t *testing.T) {
-	n1 := Node{Name: "node1", Task: func(i Input) (Output, error) { fmt.Println("Node1"); return nil, nil }}
-	n2 := Node{Name: "node2", ParentNode: &n1, Task: func(i Input) (Output, error) { fmt.Println("Node2"); return nil, nil }}
-	n3 := Node{Name: "node3", Task: func(i Input) (Output, error) { fmt.Println("Node3"); return nil, nil }}
-	n4 := Node{Name: "node4", Task: func(i Input) (Output, error) { fmt.Println("Node4"); return nil, errors.New("failed") }}
-	n5 := Node{Name: "node5", Task: func(i Input) (Output, error) {
+	n1 := Node{Name: "node1", Task: func(ctx *FlowContext, i Input) (Output, error) { fmt.Println("Node1"); return nil, nil }}
+	n2 := Node{Name: "node2", ParentNode: &n1, Task: func(ctx *FlowContext, i Input) (Output, error) { fmt.Println("Node2"); return nil, nil }}
+	n3 := Node{Name: "node3", Task: func(ctx *FlowContext, i Input) (Output, error) { fmt.Println("Node3"); return nil, nil }}
+	n4 := Node{Name: "node4", Task: func(ctx *FlowContext, i Input) (Output, error) {
+		fmt.Println("Node4")
+		return nil, AbortError{}
+	}}
+	n5 := Node{Name: "node5", Task: func(ctx *FlowContext, i Input) (Output, error) {
 		fmt.Println("Node5")
 		return TestPayload{State: "Success"}, nil
 	}}
@@ -65,12 +68,41 @@ func TestFlow(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			Flow(tt.args.n, tt.args.i, tt.args.SubNodeIndex, tt.args.LateralNodeIndex, tt.args.err)
+			ctx := FlowContext{}
+			ctx.Init()
+			Flow(&ctx, tt.args.n, tt.args.i, tt.args.SubNodeIndex, tt.args.LateralNodeIndex, tt.args.err)
 			if o, ok := n5.Output.(TestPayload); ok {
 				if o.State != "Success" {
 					t.Log("FlowTrail", n5.FlowTrail)
 					t.Errorf("Failed to retrieve node output %+v", o)
 				}
+			}
+		})
+	}
+}
+
+func TestAbortError_Error(t *testing.T) {
+	type fields struct {
+		Message string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name:   "AbortError test",
+			fields: fields{Message: "error"},
+			want:   "Flow through nodes has been aborted",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := AbortError{
+				Message: tt.fields.Message,
+			}
+			if got := err.Error(); got != tt.want {
+				t.Errorf("AbortError.Error() = %v, want %v", got, tt.want)
 			}
 		})
 	}

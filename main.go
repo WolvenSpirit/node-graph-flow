@@ -1,11 +1,21 @@
 package nodegraphflow
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 type Input interface{}
 type Output interface{}
 
-/*
+type AbortError struct {
+	Message string
+}
+
+func (err AbortError) Error() string {
+	return "Flow through nodes has been aborted"
+}
+
 type FlowContext struct {
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -21,7 +31,6 @@ func (c *FlowContext) IsCanceled() (bool, error) {
 	}
 	return false, nil
 }
-*/
 
 type NodeTrail struct {
 	NodeName   string
@@ -31,15 +40,16 @@ type NodeTrail struct {
 }
 
 type Node struct {
-	Name       string                      // Name of the node
-	ParentNode *Node                       // Parent node
-	SubNodes   []*Node                     // Children nodes
-	Siblings   []*Node                     // Lateral nodes
-	Task       func(Input) (Output, error) // Task that should be processed
-	Input      Input                       // Input payload, nil if starting node
-	Output     Output                      // Output payload
-	FlowTrail  []string                    // The order in which nodes were executed
-	NodeTrail  NodeTrail                   // Meta data populated after node processing finishes
+	Name       string                                    // Name of the node
+	ParentNode *Node                                     // Parent node
+	SubNodes   []*Node                                   // Children nodes
+	Siblings   []*Node                                   // Lateral nodes
+	Task       func(*FlowContext, Input) (Output, error) // Task that should be processed
+	Input      Input                                     // Input payload, nil if starting node
+	Output     Output                                    // Output payload
+	FlowTrail  []string                                  // The order in which nodes were executed
+	NodeTrail  NodeTrail                                 // Meta data populated after node processing finishes
+	Context    *FlowContext                              // Pointer to the flow context
 }
 
 func (n *Node) SetOutput(o Output) {
@@ -68,14 +78,19 @@ func BindNodes(parent *Node, siblings ...*Node) {
 // If a parent has more than one sub node, the higher index nodes are fallback nodes.
 // Should the first of the siblings fail, the next lateral node will execute from the siblings slice.
 // If all nodes from a level error out then the context of the flow will be canceled (TODO).
-func Flow(n *Node, i Input, SubNodeIndex int, LateralNodeIndex int, err error) {
+func Flow(ctx *FlowContext, n *Node, i Input, SubNodeIndex int, LateralNodeIndex int, err error) {
+	// TODO properly check if it's canceled
+	if t, _ := ctx.IsCanceled(); t {
+		return
+	}
 	if err != nil {
-		Flow(n.Siblings[LateralNodeIndex], i, SubNodeIndex, LateralNodeIndex, nil)
+		Flow(ctx, n.Siblings[LateralNodeIndex], i, SubNodeIndex, LateralNodeIndex, nil)
 		return
 	}
 	nt := NodeTrail{NodeName: n.Name, StartedAt: time.Now()}
 	n.SetInput(i)
-	o, err := n.Task(i)
+	n.Context = ctx
+	o, err := n.Task(ctx, i)
 	n.SetOutput(o)
 	nt.FinishedAt = time.Now()
 	nt.NodeError = err
@@ -83,12 +98,15 @@ func Flow(n *Node, i Input, SubNodeIndex int, LateralNodeIndex int, err error) {
 	if n.ParentNode != nil {
 		n.FlowTrail = append(n.ParentNode.FlowTrail, n.FlowTrail...)
 	}
+	if _, ok := err.(AbortError); ok {
+		ctx.cancel() // Unrecoverable error or inability to further process downstream with currently available inputs or no lateral nodes left
+	}
 	if len(n.SubNodes) != 0 && err == nil {
-		Flow(n.SubNodes[SubNodeIndex], o, SubNodeIndex, LateralNodeIndex, err)
+		Flow(ctx, n.SubNodes[SubNodeIndex], o, SubNodeIndex, LateralNodeIndex, err)
 	}
 	if err != nil {
 		LateralNodeIndex++
-		Flow(n.Siblings[LateralNodeIndex], i, SubNodeIndex, LateralNodeIndex, nil)
+		Flow(ctx, n.Siblings[LateralNodeIndex], i, SubNodeIndex, LateralNodeIndex, nil)
 	}
 }
 
