@@ -1,0 +1,9 @@
+mode: set
+github.com/WolvenSpirit/node-graph-flow/main.go:40.49,42.26 2 1
+github.com/WolvenSpirit/node-graph-flow/main.go:42.26,44.3 1 1
+github.com/WolvenSpirit/node-graph-flow/main.go:51.80,52.16 1 1
+github.com/WolvenSpirit/node-graph-flow/main.go:55.2,56.40 2 1
+github.com/WolvenSpirit/node-graph-flow/main.go:59.2,59.16 1 1
+github.com/WolvenSpirit/node-graph-flow/main.go:52.16,54.3 1 1
+github.com/WolvenSpirit/node-graph-flow/main.go:56.40,58.3 1 1
+github.com/WolvenSpirit/node-graph-flow/main.go:59.16,62.3 2 1
