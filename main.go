@@ -1,5 +1,7 @@
 package nodegraphflow
 
+import "time"
+
 type Input interface{}
 type Output interface{}
 
@@ -21,9 +23,11 @@ func (c *FlowContext) IsCanceled() (bool, error) {
 }
 */
 
-type Tracker struct {
-	CurrentStreamNodeDepth int
-	CurrentLateralNode     int
+type NodeTrail struct {
+	NodeName   string
+	StartedAt  time.Time
+	FinishedAt time.Time
+	NodeError  error
 }
 
 type Node struct {
@@ -34,7 +38,23 @@ type Node struct {
 	Task       func(Input) (Output, error) // Task that should be processed
 	Input      Input                       // Input payload, nil if starting node
 	Output     Output                      // Output payload
+	FlowTrail  []string                    // The order in which nodes were executed
+	NodeTrail  NodeTrail                   // Meta data populated after node processing finishes
 }
+
+func (n *Node) SetOutput(o Output) {
+	n.Output = o
+}
+
+func (n *Node) SetInput(i Input) {
+	n.Input = i
+}
+
+/*
+func(m *Node) GetOutput(o Output) Output {
+	return n.Output
+}
+*/
 
 // BindNodes links the parent to the sub nodes and each sub node laterally to each other.
 func BindNodes(parent *Node, siblings ...*Node) {
@@ -51,8 +71,18 @@ func BindNodes(parent *Node, siblings ...*Node) {
 func Flow(n *Node, i Input, SubNodeIndex int, LateralNodeIndex int, err error) {
 	if err != nil {
 		Flow(n.Siblings[LateralNodeIndex], i, SubNodeIndex, LateralNodeIndex, nil)
+		return
 	}
+	nt := NodeTrail{NodeName: n.Name, StartedAt: time.Now()}
+	n.SetInput(i)
 	o, err := n.Task(i)
+	n.SetOutput(o)
+	nt.FinishedAt = time.Now()
+	nt.NodeError = err
+	n.FlowTrail = []string{n.Name}
+	if n.ParentNode != nil {
+		n.FlowTrail = append(n.ParentNode.FlowTrail, n.FlowTrail...)
+	}
 	if len(n.SubNodes) != 0 && err == nil {
 		Flow(n.SubNodes[SubNodeIndex], o, SubNodeIndex, LateralNodeIndex, err)
 	}
