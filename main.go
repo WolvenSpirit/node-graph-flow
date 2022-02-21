@@ -1,4 +1,4 @@
-package main
+package nodegraphflow
 
 type Input interface{}
 type Output interface{}
