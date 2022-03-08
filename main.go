@@ -18,16 +18,16 @@ func (err AbortError) Error() string {
 
 // Initialized context and cancel func need to be populated
 type FlowContext struct {
-	ctx    context.Context
-	cancel context.CancelFunc
+	Ctx    context.Context
+	Cancel context.CancelFunc
 }
 
 func (c *FlowContext) Init() {
-	c.ctx, c.cancel = context.WithCancel(context.Background())
+	c.Ctx, c.Cancel = context.WithCancel(context.Background())
 }
 
 func (c *FlowContext) IsCanceled() (bool, error) {
-	if err := c.ctx.Err(); err != nil {
+	if err := c.Ctx.Err(); err != nil {
 		return true, err
 	}
 	return false, nil
@@ -103,7 +103,7 @@ func Flow(ctx *FlowContext, n *Node, i Input, SubNodeIndex int, LateralNodeIndex
 		n.FlowTrail = append(n.ParentNode.FlowTrail, n.FlowTrail...)
 	}
 	if _, ok := err.(AbortError); ok {
-		ctx.cancel() // Unrecoverable error or inability to further process downstream with currently available inputs or no lateral nodes left
+		ctx.Cancel() // Unrecoverable error or inability to further process downstream with currently available inputs or no lateral nodes left
 	}
 	if len(n.SubNodes) != 0 && err == nil {
 		Flow(ctx, n.SubNodes[SubNodeIndex], o, SubNodeIndex, LateralNodeIndex, err)

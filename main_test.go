@@ -151,7 +151,7 @@ func TestStartFlow(t *testing.T) {
 		args args
 	}{
 		{name: "Flow test",
-			args: args{n: &n1, ctx: &FlowContext{ctx: ctx, cancel: cancel}}},
+			args: args{n: &n1, ctx: &FlowContext{Ctx: ctx, Cancel: cancel}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
