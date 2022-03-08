@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 )
 
 type TestPayload struct{ State string }
@@ -46,10 +47,16 @@ func TestFlow(t *testing.T) {
 		return TestPayload{State: "Success"}, nil
 	}}
 
+	nA := Node{Name: "nodeA", Task: func(ctx *FlowContext, i Input) (Output, error) { fmt.Println("NodeA"); return nil, nil }}
+	nB := Node{Name: "nodeB", ParentNode: &n1, Task: func(ctx *FlowContext, i Input) (Output, error) { fmt.Println("NodeB"); return nil, nil }}
+	stopChain := make(chan int, 1)
+
 	BindNodes(&n1, &n2)
 	BindNodes(&n2, &n4, &n3)
 	BindNodes(&n4, &n5)
 	BindNodes(&n3, &n5)
+
+	BuildChain(&stopChain, &nA, &nB)
 
 	type args struct {
 		n                *Node
@@ -66,9 +73,17 @@ func TestFlow(t *testing.T) {
 			args: args{n: &n1, i: nil, SubNodeIndex: 0, LateralNodeIndex: 0, err: nil}},
 		{name: "Flow test",
 			args: args{n: &n2, i: nil, SubNodeIndex: 0, LateralNodeIndex: 0, err: errors.New("failed")}},
+		{name: "Flow circular test",
+			args: args{n: &nA, i: nil, SubNodeIndex: 0, LateralNodeIndex: 0, err: nil}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			go func() {
+				if tt.args.n.CircularNodePolicy.IsCircularNode {
+					time.Sleep(time.Second * 1)
+					(*tt.args.n.CircularNodePolicy.StopChain) <- 1
+				}
+			}()
 			ctx := FlowContext{}
 			ctx.Init()
 			Flow(&ctx, tt.args.n, tt.args.i, tt.args.SubNodeIndex, tt.args.LateralNodeIndex, tt.args.err)

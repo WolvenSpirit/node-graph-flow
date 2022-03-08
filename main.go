@@ -75,6 +75,14 @@ func BindNodes(parent *Node, siblings ...*Node) {
 // Should the first of the siblings fail, the next lateral node will execute from the siblings slice.
 // If all nodes from a level error out then the context of the flow will be canceled (TODO).
 func Flow(ctx *FlowContext, n *Node, i Input, SubNodeIndex int, LateralNodeIndex int, err error) {
+	if n.CircularNodePolicy.StopChain != nil {
+		select {
+		case <-*n.CircularNodePolicy.StopChain:
+			return
+		default:
+			// Just run
+		}
+	}
 	// TODO properly check if it's canceled
 	if t, _ := ctx.IsCanceled(); t {
 		return
