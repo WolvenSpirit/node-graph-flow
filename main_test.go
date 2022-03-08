@@ -1,6 +1,7 @@
 package nodegraphflow
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -104,6 +105,42 @@ func TestAbortError_Error(t *testing.T) {
 			if got := err.Error(); got != tt.want {
 				t.Errorf("AbortError.Error() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func TestStartFlow(t *testing.T) {
+	n1 := Node{Name: "node1", Task: func(ctx *FlowContext, i Input) (Output, error) { fmt.Println("Node1"); return nil, nil }}
+	n2 := Node{Name: "node2", ParentNode: &n1, Task: func(ctx *FlowContext, i Input) (Output, error) { fmt.Println("Node2"); return nil, nil }}
+	n3 := Node{Name: "node3", Task: func(ctx *FlowContext, i Input) (Output, error) { fmt.Println("Node3"); return nil, nil }}
+	n4 := Node{Name: "node4", Task: func(ctx *FlowContext, i Input) (Output, error) {
+		fmt.Println("Node4")
+		return nil, AbortError{}
+	}}
+	n5 := Node{Name: "node5", Task: func(ctx *FlowContext, i Input) (Output, error) {
+		fmt.Println("Node5")
+		return TestPayload{State: "Success"}, nil
+	}}
+
+	BindNodes(&n1, &n2)
+	BindNodes(&n2, &n4, &n3)
+	BindNodes(&n4, &n5)
+	BindNodes(&n3, &n5)
+	ctx, cancel := context.WithCancel(context.Background())
+	type args struct {
+		ctx *FlowContext
+		n   *Node
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{name: "Flow test",
+			args: args{n: &n1, ctx: &FlowContext{ctx: ctx, cancel: cancel}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			StartFlow(tt.args.ctx, tt.args.n)
 		})
 	}
 }

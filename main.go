@@ -16,6 +16,7 @@ func (err AbortError) Error() string {
 	return "Flow through nodes has been aborted"
 }
 
+// Initialized context and cancel func need to be populated
 type FlowContext struct {
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -40,16 +41,17 @@ type NodeTrail struct {
 }
 
 type Node struct {
-	Name       string                                    // Name of the node
-	ParentNode *Node                                     // Parent node
-	SubNodes   []*Node                                   // Children nodes
-	Siblings   []*Node                                   // Lateral nodes
-	Task       func(*FlowContext, Input) (Output, error) // Task that should be processed
-	Input      Input                                     // Input payload, nil if starting node
-	Output     Output                                    // Output payload
-	FlowTrail  []string                                  // The order in which nodes were executed
-	NodeTrail  NodeTrail                                 // Meta data populated after node processing finishes
-	Context    *FlowContext                              // Pointer to the flow context
+	Name               string                                    // Name of the node
+	ParentNode         *Node                                     // Parent node
+	SubNodes           []*Node                                   // Children nodes
+	Siblings           []*Node                                   // Lateral nodes
+	Task               func(*FlowContext, Input) (Output, error) // Task that should be processed
+	Input              Input                                     // Input payload, nil if starting node
+	Output             Output                                    // Output payload
+	FlowTrail          []string                                  // The order in which nodes were executed
+	NodeTrail          NodeTrail                                 // Meta data populated after node processing finishes
+	Context            *FlowContext                              // Pointer to the flow context
+	CircularNodePolicy CircularNodePolicy                        // Policy for circular nodes
 }
 
 func (n *Node) SetOutput(o Output) {
@@ -59,12 +61,6 @@ func (n *Node) SetOutput(o Output) {
 func (n *Node) SetInput(i Input) {
 	n.Input = i
 }
-
-/*
-func(m *Node) GetOutput(o Output) Output {
-	return n.Output
-}
-*/
 
 // BindNodes links the parent to the sub nodes and each sub node laterally to each other.
 func BindNodes(parent *Node, siblings ...*Node) {
@@ -110,19 +106,7 @@ func Flow(ctx *FlowContext, n *Node, i Input, SubNodeIndex int, LateralNodeIndex
 	}
 }
 
-/*
-func main() {
-
-	n1 := Node{Name: "node1", Task: func(i Input) (Output, error) { fmt.Println("Node1"); return nil, nil }}
-	n2 := Node{Name: "node2", Task: func(i Input) (Output, error) { fmt.Println("Node2"); return nil, nil }}
-	n3 := Node{Name: "node3", Task: func(i Input) (Output, error) { fmt.Println("Node3"); return nil, nil }}
-	n4 := Node{Name: "node4", Task: func(i Input) (Output, error) { fmt.Println("Node4"); return nil, errors.New("failed") }}
-	n5 := Node{Name: "node5", Task: func(i Input) (Output, error) { fmt.Println("Node5"); return nil, nil }}
-
-	BindNodes(&n1, &n2)
-	BindNodes(&n2, &n4, &n3)
-	BindNodes(&n4, &n5)
-	BindNodes(&n3, &n5)
-	Flow(&n1, nil, 0, 0, nil)
+// StartFlow is an alias for calling Flow with the arguments as Flow(ctx, n, nil, 0, 0, nil)
+func StartFlow(ctx *FlowContext, n *Node) {
+	Flow(ctx, n, nil, 0, 0, nil)
 }
-*/
