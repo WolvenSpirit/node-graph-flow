@@ -73,7 +73,7 @@ func BindNodes(parent *Node, siblings ...*Node) {
 // Flow initiates each node sequentially from the start node downstream to all sub nodes.
 // If a parent has more than one sub node, the higher index nodes are fallback nodes.
 // Should the first of the siblings fail, the next lateral node will execute from the siblings slice.
-// If all nodes from a level error out then the context of the flow will be canceled (TODO).
+// If all nodes from a level error out then the context of the flow will be canceled.
 func Flow(ctx *FlowContext, n *Node, i Input, SubNodeIndex int, LateralNodeIndex int, err error) {
 	if n.CircularNodePolicy.StopChain != nil {
 		select {
