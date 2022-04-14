@@ -8,3 +8,7 @@ Minimal frame for node graph based task processing.
 ---
 
 My intended purpose is to use this with https://github.com/WolvenSpirit/postgres-queue but it is just a few lines of code to provide a frame or example for any sort of node based separation of steps that together can define a task flow.
+
+---
+
+Examples for using this package can be found in the examples folder.
