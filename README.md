@@ -1,4 +1,6 @@
 [![node-graph-flow](https://github.com/WolvenSpirit/node-graph-flow/actions/workflows/go.yml/badge.svg)](https://github.com/WolvenSpirit/node-graph-flow/actions/workflows/go.yml) [![codecov](https://codecov.io/gh/WolvenSpirit/node-graph-flow/branch/main/graph/badge.svg?token=hDXMUdD4L1)](https://codecov.io/gh/WolvenSpirit/node-graph-flow)
+[![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](https://pkg.go.dev/github.com/WolvenSpirit/node-graph-flow)
+
 ## node graph flow
 
 Minimal frame for node graph based task processing.
