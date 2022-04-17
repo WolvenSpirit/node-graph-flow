@@ -7,9 +7,9 @@ Minimal frame for node graph based task processing.
 
 ### Disclaimer: 
 
--Each individual flow can be executed concurrently on separate goroutines.
+- Each individual flow can be executed concurrently on separate goroutines.
 
--At node level, all nodes of an individual graph should execute on the same goroutine (synchronous).
+- At node level, all nodes of an individual graph should execute on the same goroutine (synchronous).
 
 ---
 
