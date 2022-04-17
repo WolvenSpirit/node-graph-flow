@@ -2,6 +2,7 @@ package nodegraphflow
 
 import (
 	"context"
+	"os"
 	"time"
 )
 
@@ -67,6 +68,7 @@ func BindNodes(parent *Node, siblings ...*Node) {
 	parent.SubNodes = siblings
 	for k := range siblings {
 		siblings[k].Siblings = siblings
+		siblings[k].ParentNode = parent
 	}
 }
 
@@ -83,8 +85,10 @@ func Flow(ctx *FlowContext, n *Node, i Input, SubNodeIndex int, LateralNodeIndex
 			// Just run
 		}
 	}
-	// TODO properly check if it's canceled
-	if t, _ := ctx.IsCanceled(); t {
+	if t, errctx := ctx.IsCanceled(); t {
+		if errctx != nil {
+			os.Stderr.Write([]byte(errctx.Error()))
+		}
 		return
 	}
 	if err != nil {
@@ -99,6 +103,7 @@ func Flow(ctx *FlowContext, n *Node, i Input, SubNodeIndex int, LateralNodeIndex
 	nt.FinishedAt = time.Now()
 	nt.NodeError = err
 	n.FlowTrail = []string{n.Name}
+	n.NodeTrail = nt
 	if n.ParentNode != nil {
 		n.FlowTrail = append(n.ParentNode.FlowTrail, n.FlowTrail...)
 	}

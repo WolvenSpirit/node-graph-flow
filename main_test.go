@@ -127,12 +127,12 @@ func TestAbortError_Error(t *testing.T) {
 func TestStartFlow(t *testing.T) {
 	n1 := Node{Name: "node1", Task: func(ctx *FlowContext, i Input) (Output, error) { fmt.Println("Node1"); return nil, nil }}
 	n2 := Node{Name: "node2", ParentNode: &n1, Task: func(ctx *FlowContext, i Input) (Output, error) { fmt.Println("Node2"); return nil, nil }}
-	n3 := Node{Name: "node3", Task: func(ctx *FlowContext, i Input) (Output, error) { fmt.Println("Node3"); return nil, nil }}
-	n4 := Node{Name: "node4", Task: func(ctx *FlowContext, i Input) (Output, error) {
+	n3 := Node{Name: "node3", ParentNode: &n2, Task: func(ctx *FlowContext, i Input) (Output, error) { fmt.Println("Node3"); return nil, nil }}
+	n4 := Node{Name: "node4", ParentNode: &n2, Task: func(ctx *FlowContext, i Input) (Output, error) {
 		fmt.Println("Node4")
 		return nil, AbortError{}
 	}}
-	n5 := Node{Name: "node5", Task: func(ctx *FlowContext, i Input) (Output, error) {
+	n5 := Node{Name: "node5", ParentNode: &n3, Task: func(ctx *FlowContext, i Input) (Output, error) {
 		fmt.Println("Node5")
 		return TestPayload{State: "Success"}, nil
 	}}
@@ -156,6 +156,18 @@ func TestStartFlow(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			StartFlow(tt.args.ctx, tt.args.n)
+			if n4.FlowTrail == nil {
+				t.Errorf("%+v", n4)
+			}
+			if n4.NodeTrail.NodeName == "" || n4.NodeTrail.NodeError == nil {
+				t.Errorf("NodeTrail should be populated if error is returned")
+			}
+			if n2.NodeTrail.NodeName == "" || n2.NodeTrail.FinishedAt.Before(time.Date(1, 1, 1, 1, 1, 1, 1, time.Local)) {
+				t.Errorf("NodeTrail should be populated if error is returned")
+			}
+			if n1.NodeTrail.NodeName == "" || n1.NodeTrail.FinishedAt.Before(time.Date(1, 1, 1, 1, 1, 1, 1, time.Local)) {
+				t.Errorf("NodeTrail should be populated if error is returned")
+			}
 		})
 	}
 }
