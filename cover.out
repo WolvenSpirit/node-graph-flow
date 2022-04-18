@@ -1,5 +1,5 @@
 mode: set
-github.com/WolvenSpirit/node-graph-flow/circular.go:17.54,18.23 1 1
+github.com/WolvenSpirit/node-graph-flow/circular.go:17.72,18.23 1 1
 github.com/WolvenSpirit/node-graph-flow/circular.go:18.23,19.24 1 1
 github.com/WolvenSpirit/node-graph-flow/circular.go:22.3,22.24 1 1
 github.com/WolvenSpirit/node-graph-flow/circular.go:25.3,26.52 2 1
@@ -10,11 +10,11 @@ github.com/WolvenSpirit/node-graph-flow/main.go:26.30,28.2 1 1
 github.com/WolvenSpirit/node-graph-flow/main.go:30.50,31.36 1 1
 github.com/WolvenSpirit/node-graph-flow/main.go:34.2,34.19 1 1
 github.com/WolvenSpirit/node-graph-flow/main.go:31.36,33.3 1 1
-github.com/WolvenSpirit/node-graph-flow/main.go:58.36,60.2 1 1
-github.com/WolvenSpirit/node-graph-flow/main.go:62.34,64.2 1 1
-github.com/WolvenSpirit/node-graph-flow/main.go:67.49,69.26 2 1
+github.com/WolvenSpirit/node-graph-flow/main.go:58.44,60.2 1 1
+github.com/WolvenSpirit/node-graph-flow/main.go:62.41,64.2 1 1
+github.com/WolvenSpirit/node-graph-flow/main.go:67.70,69.26 2 1
 github.com/WolvenSpirit/node-graph-flow/main.go:69.26,72.3 2 1
-github.com/WolvenSpirit/node-graph-flow/main.go:79.98,80.43 1 1
+github.com/WolvenSpirit/node-graph-flow/main.go:79.112,80.43 1 1
 github.com/WolvenSpirit/node-graph-flow/main.go:88.2,88.38 1 1
 github.com/WolvenSpirit/node-graph-flow/main.go:94.2,94.16 1 1
 github.com/WolvenSpirit/node-graph-flow/main.go:98.2,107.25 10 1
@@ -32,4 +32,4 @@ github.com/WolvenSpirit/node-graph-flow/main.go:107.25,109.3 1 1
 github.com/WolvenSpirit/node-graph-flow/main.go:110.35,112.3 1 1
 github.com/WolvenSpirit/node-graph-flow/main.go:113.40,115.3 1 1
 github.com/WolvenSpirit/node-graph-flow/main.go:116.16,119.3 2 1
-github.com/WolvenSpirit/node-graph-flow/main.go:123.43,125.2 1 1
+github.com/WolvenSpirit/node-graph-flow/main.go:123.61,126.2 2 1
