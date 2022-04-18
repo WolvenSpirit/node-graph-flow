@@ -7,20 +7,22 @@ import (
 	flow "github.com/WolvenSpirit/node-graph-flow"
 )
 
+type TestPayload struct{ State string }
+
 func main() {
 	stopChain := make(chan int, 1)
 
-	node1 := flow.Node{Task: func(fc *flow.FlowContext, i flow.Input) (flow.Output, error) {
+	node1 := flow.Node[TestPayload]{Task: func(fc *flow.FlowContext, i TestPayload) (TestPayload, error) {
 		println("node1 executing")
-		return nil, nil
+		return TestPayload{}, nil
 	}, Name: "node1"}
-	node2 := flow.Node{Task: func(fc *flow.FlowContext, i flow.Input) (flow.Output, error) {
+	node2 := flow.Node[TestPayload]{Task: func(fc *flow.FlowContext, i TestPayload) (TestPayload, error) {
 		println("node2 executing")
-		return nil, nil
+		return TestPayload{}, nil
 	}, Name: "node2"}
-	node3 := flow.Node{Task: func(fc *flow.FlowContext, i flow.Input) (flow.Output, error) {
+	node3 := flow.Node[TestPayload]{Task: func(fc *flow.FlowContext, i TestPayload) (TestPayload, error) {
 		println("node3 executing")
-		return nil, nil
+		return TestPayload{}, nil
 	}, Name: "node3"}
 
 	flow.BuildChain(&stopChain, &node1, &node2, &node3)

@@ -32,9 +32,11 @@ This package arguably is one way to solve the problems and provides error handli
 
 TODO:
 
-- More tests.
+&#x2705; More tests.
 
-- Provide clean-up (like `func onFinish() { clean(*n) }` ) hooks on each node. No matter if the node fails or succeeds, a custom clean-up function can run 
+&#x2705; Now makes full use of Go Generics (go 1.18)
+
+&#x10102; Provide clean-up (like `func onFinish() { clean(*n) }` ) hooks on each node. No matter if the node fails or succeeds, a custom clean-up function can run 
 that might perform additional checks or store metrics regarding the outcome.
 
 ---

@@ -41,30 +41,30 @@ type NodeTrail struct {
 	NodeError  error
 }
 
-type Node struct {
-	Name               string                                    // Name of the node
-	ParentNode         *Node                                     // Parent node
-	SubNodes           []*Node                                   // Children nodes
-	Siblings           []*Node                                   // Lateral nodes
-	Task               func(*FlowContext, Input) (Output, error) // Task that should be processed
-	Input              Input                                     // Input payload, nil if starting node
-	Output             Output                                    // Output payload
-	FlowTrail          []string                                  // The order in which nodes were executed
-	NodeTrail          NodeTrail                                 // Meta data populated after node processing finishes
-	Context            *FlowContext                              // Pointer to the flow context
-	CircularNodePolicy CircularNodePolicy                        // Policy for circular nodes
+type Node[T interface{}] struct {
+	Name               string                           // Name of the node
+	ParentNode         *Node[T]                         // Parent node
+	SubNodes           []*Node[T]                       // Children nodes
+	Siblings           []*Node[T]                       // Lateral nodes
+	Task               func(*FlowContext, T) (T, error) // Task that should be processed
+	Input              T                                // Input payload, nil if starting node
+	Output             T                                // Output payload
+	FlowTrail          []string                         // The order in which nodes were executed
+	NodeTrail          NodeTrail                        // Meta data populated after node processing finishes
+	Context            *FlowContext                     // Pointer to the flow context
+	CircularNodePolicy CircularNodePolicy               // Policy for circular nodes
 }
 
-func (n *Node) SetOutput(o Output) {
+func (n *Node[Output]) SetOutput(o Output) {
 	n.Output = o
 }
 
-func (n *Node) SetInput(i Input) {
+func (n *Node[Input]) SetInput(i Input) {
 	n.Input = i
 }
 
 // BindNodes links the parent to the sub nodes and each sub node laterally to each other.
-func BindNodes(parent *Node, siblings ...*Node) {
+func BindNodes[T interface{}](parent *Node[T], siblings ...*Node[T]) {
 	parent.SubNodes = siblings
 	for k := range siblings {
 		siblings[k].Siblings = siblings
@@ -76,7 +76,7 @@ func BindNodes(parent *Node, siblings ...*Node) {
 // If a parent has more than one sub node, the higher index nodes are fallback nodes.
 // Should the first of the siblings fail, the next lateral node will execute from the siblings slice.
 // If all nodes from a level error out then the context of the flow will be canceled.
-func Flow(ctx *FlowContext, n *Node, i Input, SubNodeIndex int, LateralNodeIndex int, err error) {
+func Flow[T interface{}](ctx *FlowContext, n *Node[T], i T, SubNodeIndex int, LateralNodeIndex int, err error) {
 	if n.CircularNodePolicy.StopChain != nil {
 		select {
 		case <-*n.CircularNodePolicy.StopChain:
@@ -120,6 +120,7 @@ func Flow(ctx *FlowContext, n *Node, i Input, SubNodeIndex int, LateralNodeIndex
 }
 
 // StartFlow is an alias for calling Flow with the arguments as Flow(ctx, n, nil, 0, 0, nil)
-func StartFlow(ctx *FlowContext, n *Node) {
-	Flow(ctx, n, nil, 0, 0, nil)
+func StartFlow[T interface{}](ctx *FlowContext, n *Node[T]) {
+	var e T
+	Flow(ctx, n, e, 0, 0, nil)
 }
