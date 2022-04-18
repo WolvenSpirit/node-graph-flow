@@ -53,6 +53,7 @@ type Node[T interface{}] struct {
 	NodeTrail          NodeTrail                        // Meta data populated after node processing finishes
 	Context            *FlowContext                     // Pointer to the flow context
 	CircularNodePolicy CircularNodePolicy               // Policy for circular nodes
+	OnFinished         func(n T)                        // Called after task finishes execution
 }
 
 func (n *Node[Output]) SetOutput(o Output) {
@@ -99,6 +100,9 @@ func Flow[T interface{}](ctx *FlowContext, n *Node[T], i T, SubNodeIndex int, La
 	n.SetInput(i)
 	n.Context = ctx
 	o, err := n.Task(ctx, i)
+	if n.OnFinished != nil {
+		n.OnFinished(o)
+	}
 	n.SetOutput(o)
 	nt.FinishedAt = time.Now()
 	nt.NodeError = err

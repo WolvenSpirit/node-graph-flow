@@ -35,7 +35,7 @@ TODO:
 
 &#x2705; Now makes full use of Go Generics (go 1.18)
 
-&#x10102; Provide clean-up (like `func onFinish() { clean(*n) }` ) hooks on each node. No matter if the node fails or succeeds, a custom clean-up function can run 
+&#x2705; Provides optional onFinished hook on each node. No matter if the node fails or succeeds, a custom clean-up function can run 
 that might perform additional checks or store metrics regarding the outcome.
 
 ---

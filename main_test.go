@@ -149,10 +149,12 @@ func TestAbortError_Error(t *testing.T) {
 }
 
 func TestStartFlow(t *testing.T) {
+	var n1Finished bool
 	n1 := Node[TestPayload]{Name: "node1", Task: func(ctx *FlowContext, i TestPayload) (TestPayload, error) {
 		fmt.Println("Node1")
 		return TestPayload{}, nil
 	}}
+	n1.OnFinished = func(n TestPayload) { n1Finished = true }
 	n2 := Node[TestPayload]{Name: "node2", ParentNode: &n1, Task: func(ctx *FlowContext, i TestPayload) (TestPayload, error) {
 		fmt.Println("Node2")
 		return TestPayload{}, nil
@@ -200,6 +202,9 @@ func TestStartFlow(t *testing.T) {
 			}
 			if n1.NodeTrail.NodeName == "" || n1.NodeTrail.FinishedAt.Before(time.Date(1, 1, 1, 1, 1, 1, 1, time.Local)) {
 				t.Errorf("NodeTrail should be populated")
+			}
+			if !n1Finished {
+				t.Errorf("OnFinished should be called")
 			}
 		})
 	}
