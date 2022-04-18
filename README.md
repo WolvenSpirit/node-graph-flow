@@ -3,7 +3,7 @@
 
 ## node graph flow
 
-Minimal frame for node graph based task processing.
+Simple frame for node graph inspired task processing.
 
 ### Disclaimer: 
 
@@ -19,14 +19,13 @@ My intended purpose is to use this with https://github.com/WolvenSpirit/postgres
 
 ### Why define a generic task or a handler like this? 
 
-In Go, handling errors always creates branches within a program (like in most languages), this might make things hard to debug later on.
+Main reasons:
 
-In contrast, what others consider good code, slim functions with a single purpose etc. does tend to just wrap to many things and makes 
-another mess because things now at top level are just some custom named wrappers that might not even be in the same style within a program. 
+&#x2705; Handle errors consistently.
 
-This brings more confusion.
+&#x2705; Handle program conditional logic flows consistently.
 
-This package arguably is one way to solve the problems and provides error handling with errors that are recorded throughout the task execution.
+&#x2705; Have a recorded and traceable logic flow throughout task execution.
 
 --- 
 
