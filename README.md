@@ -29,10 +29,6 @@ Main reasons:
 
 --- 
 
-TODO:
-
-&#x2705; More tests.
-
 &#x2705; Now makes full use of Go Generics (go 1.18)
 
 &#x2705; Provides optional onFinished hook on each node. No matter if the node fails or succeeds, a custom clean-up function can run 
